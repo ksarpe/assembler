@@ -19,7 +19,10 @@ ReadLoop:
     
     ;call BubbleSort
     ;call InsertionSort
-    call SelectionSort
+    ;call SelectionSort
+    mov esi, OFFSET array
+    mov ecx, arraySize
+    call QuickSort
     
     mov ecx, arraySize
     lea esi, array
@@ -172,5 +175,72 @@ EndOuterLoop:
     ret 8
 
 SelectionSort ENDP
+
+Partition PROC
+    ; Ustawienie pivot na ostatni element tablicy
+    mov edx, ecx
+    dec edx
+    mov eax, [esi + edx*4] ; eax = pivot
+    mov ebx, -1            ; Indeks mniejszej czêœci
+
+    ; Przejœcie przez elementy tablicy
+    mov edx, 0
+    WhileLoop:
+        cmp edx, ecx
+        jge PartitionEnd  ; Jeœli wszystkie elementy zosta³y sprawdzone
+
+        ; Porównanie elementu z pivotem
+        mov edi, [esi + edx*4] ; Wczytanie bie¿¹cego elementu
+        cmp edi, eax
+        jge IncrementIndex
+
+        ; Zamiana elementów
+        inc ebx
+        ; Przesuniêcie ebx o 4*ebx do adresu w³aœciwego elementu
+        mov edi, [esi + ebx*4]
+        xchg edi, [esi + edx*4]
+        mov [esi + ebx*4], edi
+
+        IncrementIndex:
+        inc edx
+        jmp WhileLoop
+
+    PartitionEnd:
+    ; Zamiana pivota z pierwszym wiêkszym elementem
+    inc ebx
+    mov edx, [esi + ebx*4]  ; Adres docelowy dla pivota
+    xchg edx, [esi + ecx*4 - 4] ; Zamiana miejscami z pivotem
+    mov [esi + ebx*4], edx
+
+    ; Zwracanie nowego indeksu pivota
+    mov eax, ebx
+    ret
+Partition ENDP
+
+QuickSort PROC
+    cmp ecx, 1
+    jle Done ; jak mamy jeden element w tablicy to konczymy
+
+    call Partition
+    push ecx ; zachowujemy ecx na stosie
+
+    ;lewa polowa
+    mov ecx, eax ; eax jest z partition (index)
+    call QuickSort
+
+    ;prawa polowa
+    pop ecx
+    sub ecx, eax
+    add esi, eax
+    add esi, 4
+    call QuickSort
+
+    ;stan poczatkowy esi
+    sub esi, eax
+    sub esi, 4
+
+Done:
+    ret
+QuickSort ENDP
 
 END main
