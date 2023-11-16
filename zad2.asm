@@ -1,42 +1,34 @@
-.386
-.model flat, stdcall
-.stack 4096
-ExitProcess PROTO, dwExitCode:DWORD
-
 INCLUDE Irvine32.inc
 
 .data
-string db 81 dup(0)   ; Tablica na 80 znaków + znak koñca linii
-counts db 256 dup(0)  ; Tablica na zliczanie wyst¹pieñ ka¿dego z 256 mo¿liwych znaków
+    string db 81 dup(?)   
+    counts db 256 dup(?)
 
 .code
 main PROC
-    ; Wczytaj napis
-    mov edx, OFFSET string
+    lea edx, string
     mov ecx, 80
-    call ReadString ; ReadString bierze EDX jako pointer na bufor a ECX jakos max numer znaków do przeczytania
+    call ReadString ;uses edx,ecx
     
-    ; Zlicz wyst¹pienia ka¿dego znaku
-    mov esi, OFFSET string
+    lea esi, string
 countLoop:
-    mov al, [esi] ; przerzuc znak z esi (naszego stringa)
-    cmp al, 0 ; sprawdz czy jest cokolwiek czy juz koniec
-    je  doneCounting ; jak koniec to skoncz
-    inc counts[eax] ; jak nie to zwieksz tablice pod wartoscia tego znaku w ascii
-    inc esi ; zwieksz wskaznik na znak w tablicy string
-    jmp countLoop ; wroc do naszej petli zliczajacej
+    mov al, [esi]
+    cmp al, 0
+    je doneCounting
+    inc counts[eax]
+    inc esi
+    jmp countLoop
 doneCounting:
-    ; Wypisz wyniki
-    mov esi, 0 ; sprawdzamy od znaku 0 (ascii)
+    mov esi, 0 ;ascii code check from 0
 
 printLoop:
-    cmp esi, 256 ; jak tablica ascii sie skonczyla to zakoncz program
+    cmp esi, 256 ;finish condition
     jge donePrinting
-    mov al, counts[esi] ; przerzuc ilosc z counts
-    cmp al, 0 ; jak al jest zero (czyli nic)
-    je nextChar ; to przeskocz literke
-    movzx eax, al ; jak nie przeskoczy³o, to rozszerz to do 32 bitow aby wypisac (chyba nie trzeba)
-    call WriteDec ; wypisz ilosc z EAX
+    mov al, counts[esi]
+    cmp al, 0
+    je nextChar
+    movzx eax, al
+    call WriteDec
     mov al, '-'
     call WriteChar
     mov eax, esi
